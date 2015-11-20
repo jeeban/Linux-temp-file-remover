@@ -1,0 +1,51 @@
+#!/bin/sh
+#####################################################################################################
+#
+#	Code Details :- temp file remover
+#	Author :- miku<jeeban29@gmail.com>
+#
+####################################################################################################
+
+clean()
+{
+	cd $1
+	echo "entered to $1"
+	temp_file_count=`ls -A | egrep "~$" | wc -l` >/dev/null 2>&1
+	if [ $temp_file_count -ne 0 ]
+	then
+		total_file_count=`expr $total_file_count + $temp_file_count`
+		echo ">	$temp_file_count files found in $PWD" >> $root_dir/log
+		ls -A | egrep "\~" 2>/dev/null >> $root_dir/log
+		echo "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" >> $root_dir/log
+		echo >> $root_dir/log
+		rm *~
+	fi
+#	
+	for dir in `ls -lA|grep "drwx"|grep "miku miku"|awk '{print $9 }'`
+#	for dir in `ls -la`
+	do
+		if [ -d $dir ]
+		then
+			#echo "checking $dir"
+			clean ${dir}
+		else
+			:
+			#echo "invalid directory $dir"
+		fi
+	done
+	cd ..
+}
+root_dir=/home/miku
+total_file_count=0
+clean $root_dir #Desktop #/Desktop/opusway/data
+#echo "===================================================="
+#echo "Total $total_file_count files found."
+
+if [ $total_file_count -eq 0 ]
+then
+	echo "No files found. TECHBOX is already clean." >> $root_dir/log
+fi
+
+zenity --text-info --filename=$root_dir/log --title="$total_file_count files deleted" --timeout=100 --width=600 --height=600 >>/dev/null 2>&1
+rm $root_dir/log >/dev/null 2>&1
+exit 0
